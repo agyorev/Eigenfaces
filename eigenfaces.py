@@ -19,6 +19,9 @@ class Eigenfaces(object):
     n = 112                         # number of rows of the image
     mn = m * n                      # length of the column vector
 
+    """
+    Initializing the Eigenfaces model.
+    """
     def __init__(self, _faces_dir = '.'):
         self.faces_dir = _faces_dir
         self.training_ids = []
@@ -28,7 +31,7 @@ class Eigenfaces(object):
         cur_img = 0
         for face_id in xrange(1, self.faces_count + 1):
 
-            training_ids = random.sample(range(1, 10), 6) # the id's of the 6 random training images
+            training_ids = random.sample(range(1, 11), 6) # the id's of the 6 random training images
             self.training_ids.append(training_ids)        # remembering the training id's for later
 
             for training_id in training_ids:
@@ -79,6 +82,9 @@ class Eigenfaces(object):
         # energy_count rows for the l columns/training images
         self.W = self.evectors.transpose() * L            # computing the weights
 
+    """
+    Classify an image to one of the eigenfaces.
+    """
     def classify(self, path_to_img):
         img = cv2.imread(path_to_img, 0)                  # read as a grayscale image
         img_col = np.array(img).flatten()                 # flatten the image
@@ -92,15 +98,35 @@ class Eigenfaces(object):
         # finding the min ||W_j - S||
         diff = self.W - S
         norms = np.linalg.norm(diff, axis=0)
-        print norms, norms.shape
 
         closest_face_id = np.argmin(norms)                # the id [0..240) of the minerror face to the sample
-        print closest_face_id
+        return (closest_face_id / 5) + 1                  # return the faceid (1..40)
+
+    """
+    Evaluate the model using the 4 test faces left
+    from every different face in the AT&T set.
+    """
+    def evaluate(self):
+        # evaluate according to the 4 test images from every
+        # different image amongst the 40 in the data set
+        test_count = 4 * self.faces_count                   # number of all AT&T test images/faces
+        test_correct = 0
+        for face_id in xrange(1, self.faces_count + 1):
+            for test_id in xrange(1, 11):
+                # we skip the image if it is part of the training set
+                if (test_id in self.training_ids[face_id-1]) == False:
+                    path_to_img = os.path.join(self.faces_dir, 's' + str(face_id), str(test_id) + '.pgm')
+
+                    print self.classify(path_to_img), face_id
+                    if self.classify(path_to_img) == face_id:
+                        test_correct += 1
+
+        print 'Correct: ' + str(100. * test_correct / test_count) + '%'
 
 if __name__ == "__main__":
-    print Eigenfaces.faces_dir
     efaces = Eigenfaces(str(sys.argv[1]))
-    Eigenfaces.classify(efaces, 'att_faces/s1/1.pgm')
+    efaces.evaluate()
+
 
 #mean_img = np.reshape(mean_img_col, (self.n, self.m))
 #img2 = mean_img
