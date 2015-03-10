@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+__author__ = 'Aleksandar Gyorev'
+__email__  = 'a.gyorev@jacobs-university.de'
+
 import os
 import cv2
 import sys
@@ -7,10 +10,19 @@ import random
 import numpy as np
 
 """
-Example:
-    $> python2.7 eigenfaces.py att_faces
-"""
+A Python class that implements the Eigenfaces algorithm
+for face recognition, using eigenvalue decomposition and
+principle component analysis.
 
+We use the AT&T data set, with 60% of the images as train
+and the rest 40% as a test set, including 85% of the energy.
+
+Example Call:
+    $> python2.7 eigenfaces.py att_faces
+
+Algorithm Reference:
+    http://docs.opencv.org/modules/contrib/doc/facerec/facerec_tutorial.html#algorithmic-description
+"""
 class Eigenfaces(object):
     faces_count = 40
 
