@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import cv2
 import sys
@@ -26,7 +28,7 @@ class Eigenfaces(object):
         self.faces_dir = _faces_dir
         self.training_ids = []
 
-        L = np.empty(shape=(self.mn, self.l))
+        L = np.empty(shape=(self.mn, self.l), dtype='float64')
 
         cur_img = 0
         for face_id in xrange(1, self.faces_count + 1):
@@ -39,7 +41,7 @@ class Eigenfaces(object):
                 print '> reading file: ' + path_to_img
 
                 img = cv2.imread(path_to_img, 0)          # read a grayscale image
-                img_col = np.array(img).flatten()         # flatten the 2d image into 1d
+                img_col = np.array(img, dtype='float64').flatten()         # flatten the 2d image into 1d
 
                 L[:, cur_img] = img_col[:]                # set the cur_img-th column to the current training image
                 cur_img += 1
@@ -52,32 +54,35 @@ class Eigenfaces(object):
         # instead of computing the covariance matrix as
         # L*L^T, we set C = L^T*L, and end up with way
         # smaller and computentionally inexpensive one
+        # we also need to divide by the number of training
+        # images
         C = np.matrix(L.transpose()) * np.matrix(L)
+        C /= self.l
 
-        U, s, V = np.linalg.svd(C, full_matrices=True)    # compute the SVD decomposition
-
-        # L * C * v_i       = lam_i * L * v_i
-        # L * L^T * L * v_i = lam_i * L * v_i
-        # => e-vectors and e-values of L * L^T
-        #    are L * v_i and lam_i respectively
-        self.evectors = L * V
-        norms = np.linalg.norm(self.evectors, axis=0)
-        self.evectors = self.evectors / norms
+        self.evalues, self.evectors = np.linalg.eig(C)    # eigenvectors/values of the covariance matrix
+        sort_indices = self.evalues.argsort()[::-1]       # getting their correct order - decreasing
+        self.evalues = self.evalues[sort_indices]         # puttin the evalues in that order
+        self.evectors = self.evectors[sort_indices]       # same for the evectors
 
         # include only the first k evectors/values so
         # that they include approx. 85% of the energy
-        evalues_sum = sum(s[:])
+        evalues_sum = sum(self.evalues[:])
         evalues_count = 0
         evalues_energy = 0.0
-        for evalue in s:
+        for evalue in self.evalues:
             evalues_count += 1
             evalues_energy += evalue / evalues_sum
 
             if evalues_energy >= 0.85:
                 break
 
-        self.evalues = s[0:evalues_count]
-        self.evectors = self.evectors[:, 0:evalues_count]
+        self.evalues = self.evalues[0:evalues_count]
+        self.evectors = self.evectors[0:evalues_count]
+
+        self.evectors = self.evectors.transpose()         # eigenvectors are obtaines as rows, not columns
+        self.evectors = L * self.evectors
+        norms = np.linalg.norm(self.evectors, axis=0)
+        self.evectors = self.evectors / norms
 
         # energy_count rows for the l columns/training images
         self.W = self.evectors.transpose() * L            # computing the weights
@@ -87,7 +92,7 @@ class Eigenfaces(object):
     """
     def classify(self, path_to_img):
         img = cv2.imread(path_to_img, 0)                  # read as a grayscale image
-        img_col = np.array(img).flatten()                 # flatten the image
+        img_col = np.array(img, dtype='float64').flatten()                 # flatten the image
         img_col -= self.mean_img_col                      # subract the mean column
         img_col = np.reshape(img_col, (self.mn, 1))       # from row vector to col vector
 
@@ -100,7 +105,7 @@ class Eigenfaces(object):
         norms = np.linalg.norm(diff, axis=0)
 
         closest_face_id = np.argmin(norms)                # the id [0..240) of the minerror face to the sample
-        return (closest_face_id / 5) + 1                  # return the faceid (1..40)
+        return (closest_face_id / 6) + 1                  # return the faceid (1..40)
 
     """
     Evaluate the model using the 4 test faces left
