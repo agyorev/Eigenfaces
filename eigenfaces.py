@@ -18,8 +18,8 @@ principle component analysis.
 We use the AT&T data set, with 60% of the images as train
 and the rest 40% as a test set, including 85% of the energy.
 
-Additionally, we find the top 5 matches within the AT&T set
-for a small set of celebrity face images.
+Additionally, we use a small set of celebrity images to
+find the best AT&T matches to them.
 
 Example Call:
     $> python2.7 eigenfaces.py att_faces celebrity_faces
