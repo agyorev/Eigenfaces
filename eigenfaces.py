@@ -14,12 +14,12 @@ Example:
 class Eigenfaces(object):
     faces_count = 40
 
-    faces_dir = '.'                 # directory path to the AT&T faces
+    faces_dir = '.'                                                             # directory path to the AT&T faces
 
-    l = 6 * faces_count             # training images count
-    m = 92                          # number of columns of the image
-    n = 112                         # number of rows of the image
-    mn = m * n                      # length of the column vector
+    l = 6 * faces_count                                                         # training images count
+    m = 92                                                                      # number of columns of the image
+    n = 112                                                                     # number of rows of the image
+    mn = m * n                                                                  # length of the column vector
 
     """
     Initializing the Eigenfaces model.
@@ -28,27 +28,27 @@ class Eigenfaces(object):
         self.faces_dir = _faces_dir
         self.training_ids = []
 
-        L = np.empty(shape=(self.mn, self.l), dtype='float64')
+        L = np.empty(shape=(self.mn, self.l), dtype='float64')                  # each row of L represents one train image
 
         cur_img = 0
         for face_id in xrange(1, self.faces_count + 1):
 
-            training_ids = random.sample(range(1, 11), 6) # the id's of the 6 random training images
-            self.training_ids.append(training_ids)        # remembering the training id's for later
+            training_ids = random.sample(range(1, 11), 6)                       # the id's of the 6 random training images
+            self.training_ids.append(training_ids)                              # remembering the training id's for later
 
             for training_id in training_ids:
                 path_to_img = os.path.join(self.faces_dir, 's' + str(face_id), str(training_id) + '.pgm')
                 print '> reading file: ' + path_to_img
 
-                img = cv2.imread(path_to_img, 0)          # read a grayscale image
-                img_col = np.array(img, dtype='float64').flatten()         # flatten the 2d image into 1d
+                img = cv2.imread(path_to_img, 0)                                # read a grayscale image
+                img_col = np.array(img, dtype='float64').flatten()              # flatten the 2d image into 1d
 
-                L[:, cur_img] = img_col[:]                # set the cur_img-th column to the current training image
+                L[:, cur_img] = img_col[:]                                      # set the cur_img-th column to the current training image
                 cur_img += 1
 
-        self.mean_img_col = np.sum(L, axis=1) / self.l    # get the mean of all images / over the rows of L
+        self.mean_img_col = np.sum(L, axis=1) / self.l                          # get the mean of all images / over the rows of L
 
-        for j in xrange(0, self.l):                       # subtract from all training images
+        for j in xrange(0, self.l):                                             # subtract from all training images
             L[:, j] -= self.mean_img_col[:]
 
         # instead of computing the covariance matrix as
@@ -59,10 +59,10 @@ class Eigenfaces(object):
         C = np.matrix(L.transpose()) * np.matrix(L)
         C /= self.l
 
-        self.evalues, self.evectors = np.linalg.eig(C)    # eigenvectors/values of the covariance matrix
-        sort_indices = self.evalues.argsort()[::-1]       # getting their correct order - decreasing
-        self.evalues = self.evalues[sort_indices]         # puttin the evalues in that order
-        self.evectors = self.evectors[sort_indices]       # same for the evectors
+        self.evalues, self.evectors = np.linalg.eig(C)                          # eigenvectors/values of the covariance matrix
+        sort_indices = self.evalues.argsort()[::-1]                             # getting their correct order - decreasing
+        self.evalues = self.evalues[sort_indices]                               # puttin the evalues in that order
+        self.evectors = self.evectors[sort_indices]                             # same for the evectors
 
         # include only the first k evectors/values so
         # that they include approx. 85% of the energy
@@ -76,25 +76,25 @@ class Eigenfaces(object):
             if evalues_energy >= 0.85:
                 break
 
+        # reduce the number of eigenvectors/values to consider
         self.evalues = self.evalues[0:evalues_count]
         self.evectors = self.evectors[0:evalues_count]
 
-        self.evectors = self.evectors.transpose()         # eigenvectors are obtaines as rows, not columns
-        self.evectors = L * self.evectors
-        norms = np.linalg.norm(self.evectors, axis=0)
-        self.evectors = self.evectors / norms
+        self.evectors = self.evectors.transpose()                               # change eigenvectors from rows to columns
+        self.evectors = L * self.evectors                                       # left multiply to get the correct evectors
+        norms = np.linalg.norm(self.evectors, axis=0)                           # find the norm of each eigenvector
+        self.evectors = self.evectors / norms                                   # normalize all eigenvectors
 
-        # energy_count rows for the l columns/training images
-        self.W = self.evectors.transpose() * L            # computing the weights
+        self.W = self.evectors.transpose() * L                                  # computing the weights
 
     """
     Classify an image to one of the eigenfaces.
     """
     def classify(self, path_to_img):
-        img = cv2.imread(path_to_img, 0)                  # read as a grayscale image
-        img_col = np.array(img, dtype='float64').flatten()                 # flatten the image
-        img_col -= self.mean_img_col                      # subract the mean column
-        img_col = np.reshape(img_col, (self.mn, 1))       # from row vector to col vector
+        img = cv2.imread(path_to_img, 0)                                        # read as a grayscale image
+        img_col = np.array(img, dtype='float64').flatten()                      # flatten the image
+        img_col -= self.mean_img_col                                            # subract the mean column
+        img_col = np.reshape(img_col, (self.mn, 1))                             # from row vector to col vector
 
         # projecting the normalized probe onto the
         # Eigenspace, to find out the weights
@@ -104,8 +104,8 @@ class Eigenfaces(object):
         diff = self.W - S
         norms = np.linalg.norm(diff, axis=0)
 
-        closest_face_id = np.argmin(norms)                # the id [0..240) of the minerror face to the sample
-        return (closest_face_id / 6) + 1                  # return the faceid (1..40)
+        closest_face_id = np.argmin(norms)                                      # the id [0..240) of the minerror face to the sample
+        return (closest_face_id / 6) + 1                                        # return the faceid (1..40)
 
     """
     Evaluate the model using the 4 test faces left
@@ -114,26 +114,28 @@ class Eigenfaces(object):
     def evaluate(self):
         # evaluate according to the 4 test images from every
         # different image amongst the 40 in the data set
-        test_count = 4 * self.faces_count                   # number of all AT&T test images/faces
+        test_count = 4 * self.faces_count                                       # number of all AT&T test images/faces
         test_correct = 0
         for face_id in xrange(1, self.faces_count + 1):
             for test_id in xrange(1, 11):
-                # we skip the image if it is part of the training set
-                if (test_id in self.training_ids[face_id-1]) == False:
+                if (test_id in self.training_ids[face_id-1]) == False:          # we skip the image if it is part of the training set
                     path_to_img = os.path.join(self.faces_dir, 's' + str(face_id), str(test_id) + '.pgm')
 
-                    print self.classify(path_to_img), face_id
-                    if self.classify(path_to_img) == face_id:
+                    result_id = self.classify(path_to_img)
+                    result = (result_id == face_id)
+
+                    print('FaceID: %2d, SubID: %2d' % (face_id, test_id))
+
+                    if result == True:
                         test_correct += 1
+                        print '> Result: Correct!'
+                    else:
+                        print '> Result: Wrong! Return ID: %2d' % result_id
+
+                    print ''
 
         print 'Correct: ' + str(100. * test_correct / test_count) + '%'
 
 if __name__ == "__main__":
-    efaces = Eigenfaces(str(sys.argv[1]))
-    efaces.evaluate()
-
-
-#mean_img = np.reshape(mean_img_col, (self.n, self.m))
-#img2 = mean_img
-#cv2.imwrite('test.png', img2)
-
+    efaces = Eigenfaces(str(sys.argv[1]))                                       # create the Eigenfaces object with the data dir
+    efaces.evaluate()                                                           # evaluate our model
