@@ -22,7 +22,7 @@ Example Calls
 
 Results
 ---
-Under the `results/` folder there will be a `results.txt` file containing detailed results from the evaluation over the test images (40% of all faces).
+Under the `results/` folder there will be a `att_results.txt` file containing detailed results from the evaluation over the test images (40% of all faces).
 
 If a celebrity data set was specified, for each face in the celebrity data set, there will be a folder with results for it, including the Top 5 matches from the AT&T faces, as well as the similarity score between them.
 
