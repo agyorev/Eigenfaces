@@ -23,6 +23,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     energy_values = range(5,101)[0:101:5]                                       # we consider all energies multiples of 5
+    #energy_values = [85 85 85 85 85]                                            # run 5 times with 85% energy
 
     f = open('energy.dat', 'w')
     for energy_value in energy_values:
