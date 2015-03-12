@@ -1,0 +1,11 @@
+# $> gnuplot plot_energy.gpi
+
+set title  'Accuracy of recognition depending on the energy used'
+set xlabel 'Percentage of energy used'
+set ylabel 'Percentage of accuracy'
+set key left top                                                                # move the legend so it doesn't overlap
+
+set style line 1 lc rgb '#0060ad' lt 1 lw 2 pt 7 ps 1.5                         # --- blue
+plot 'energy.dat' with linespoints ls 1
+
+pause -1 
