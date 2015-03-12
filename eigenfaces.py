@@ -177,7 +177,7 @@ class Eigenfaces(object):                                                       
 
             diff = self.W - S                                                   # finding the min ||W_j - S||
             norms = np.linalg.norm(diff, axis=0)
-            top5_ids = np.argpartition(-norms, 5)[:5]                           # first five elements: indices of top 5 matches in AT&T set
+            top5_ids = np.argpartition(norms, 5)[:5]                           # first five elements: indices of top 5 matches in AT&T set
 
             name_noext = os.path.splitext(img_name)[0]                          # the image file name without extension
             result_dir = os.path.join('results', name_noext)                    # path to the respective results folder
