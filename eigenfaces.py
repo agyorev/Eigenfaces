@@ -32,7 +32,10 @@ class Eigenfaces(object):                                                       
 
     faces_dir = '.'                                                             # directory path to the AT&T faces
 
-    l = 6 * faces_count                                                         # training images count
+    train_faces_count = 6                                                       # number of faces used for training
+    test_faces_count = 4                                                        # number of faces used for testing
+
+    l = train_faces_count * faces_count                                         # training images count
     m = 92                                                                      # number of columns of the image
     n = 112                                                                     # number of rows of the image
     mn = m * n                                                                  # length of the column vector
@@ -52,7 +55,7 @@ class Eigenfaces(object):                                                       
         cur_img = 0
         for face_id in xrange(1, self.faces_count + 1):
 
-            training_ids = random.sample(range(1, 11), 6)                       # the id's of the 6 random training images
+            training_ids = random.sample(range(1, 11), self.train_faces_count)  # the id's of the 6 random training images
             self.training_ids.append(training_ids)                              # remembering the training id's for later
 
             for training_id in training_ids:
@@ -121,7 +124,7 @@ class Eigenfaces(object):                                                       
         norms = np.linalg.norm(diff, axis=0)
 
         closest_face_id = np.argmin(norms)                                      # the id [0..240) of the minerror face to the sample
-        return (closest_face_id / 6) + 1                                        # return the faceid (1..40)
+        return (closest_face_id / self.train_faces_count) + 1                   # return the faceid (1..40)
 
     """
     Evaluate the model using the 4 test faces left
@@ -132,7 +135,7 @@ class Eigenfaces(object):                                                       
         results_file = os.path.join('results', 'att_results.txt')               # filename for writing the evaluating results in
         f = open(results_file, 'w')                                             # the actual file
 
-        test_count = 4 * self.faces_count                                       # number of all AT&T test images/faces
+        test_count = self.test_faces_count * self.faces_count                   # number of all AT&T test images/faces
         test_correct = 0
         for face_id in xrange(1, self.faces_count + 1):
             for test_id in xrange(1, 11):
@@ -186,8 +189,8 @@ class Eigenfaces(object):                                                       
 
             f = open(result_file, 'w')                                          # open the results file for writing
             for top_id in top5_ids:
-                face_id = (top_id / 6) + 1                                      # getting the face_id of one of the closest matches
-                subface_id = self.training_ids[face_id-1][top_id % 6]           # getting the exact subimage from the face
+                face_id = (top_id / self.train_faces_count) + 1                 # getting the face_id of one of the closest matches
+                subface_id = self.training_ids[face_id-1][top_id % self.train_faces_count]           # getting the exact subimage from the face
 
                 path_to_img = os.path.join(self.faces_dir,
                         's' + str(face_id), str(subface_id) + '.pgm')           # relative path to the top5 face
