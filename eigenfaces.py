@@ -40,10 +40,11 @@ class Eigenfaces(object):                                                       
     """
     Initializing the Eigenfaces model.
     """
-    def __init__(self, _faces_dir = '.'):
+    def __init__(self, _faces_dir = '.', _energy = 0.85):
         print '> Initializing started'
 
         self.faces_dir = _faces_dir
+        self.energy = _energy
         self.training_ids = []                                                  # train image id's for every at&t face
 
         L = np.empty(shape=(self.mn, self.l), dtype='float64')                  # each row of L represents one train image
@@ -89,7 +90,7 @@ class Eigenfaces(object):                                                       
             evalues_count += 1
             evalues_energy += evalue / evalues_sum
 
-            if evalues_energy >= 0.85:
+            if evalues_energy >= self.energy:
                 break
 
         self.evalues = self.evalues[0:evalues_count]                            # reduce the number of eigenvectors/values to consider
@@ -150,8 +151,9 @@ class Eigenfaces(object):                                                       
                                 (path_to_img, result_id))
 
         print '> Evaluating AT&T faces ended'
-        print 'Correct: ' + str(100. * test_correct / test_count) + '%'
-        f.write('Correct: %.2f\n' % (100.0 * test_correct / test_count))
+        self.accuracy = float(100. * test_correct / test_count)
+        print 'Correct: ' + str(self.accuracy) + '%'
+        f.write('Correct: %.2f\n' % (self.accuracy))
         f.close()                                                               # closing the file
 
     """
