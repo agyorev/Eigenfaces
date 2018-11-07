@@ -84,7 +84,7 @@ class Eigenfaces(object):                                                       
         self.evalues, self.evectors = np.linalg.eig(C)                          # eigenvectors/values of the covariance matrix
         sort_indices = self.evalues.argsort()[::-1]                             # getting their correct order - decreasing
         self.evalues = self.evalues[sort_indices]                               # puttin the evalues in that order
-        self.evectors = self.evectors[sort_indices]                             # same for the evectors
+        self.evectors = self.evectors[:,sort_indices]                             # same for the evectors
 
         evalues_sum = sum(self.evalues[:])                                      # include only the first k evectors/values so
         evalues_count = 0                                                       # that they include approx. 85% of the energy
@@ -97,7 +97,7 @@ class Eigenfaces(object):                                                       
                 break
 
         self.evalues = self.evalues[0:evalues_count]                            # reduce the number of eigenvectors/values to consider
-        self.evectors = self.evectors[0:evalues_count]
+        self.evectors = self.evectors[:,0:evalues_count]
 
         self.evectors = self.evectors.transpose()                               # change eigenvectors from rows to columns
         self.evectors = L * self.evectors                                       # left multiply to get the correct evectors
