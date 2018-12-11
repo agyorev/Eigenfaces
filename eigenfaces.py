@@ -99,7 +99,7 @@ class Eigenfaces(object):                                                       
         self.evalues = self.evalues[0:evalues_count]                            # reduce the number of eigenvectors/values to consider
         self.evectors = self.evectors[:,0:evalues_count]
 
-        #self.evectors = self.evectors.transpose()                               # change eigenvectors from rows to columns (Should not transpose) 
+        #self.evectors = self.evectors.transpose()                                # change eigenvectors from rows to columns (Should not transpose) 
         self.evectors = L * self.evectors                                       # left multiply to get the correct evectors
         norms = np.linalg.norm(self.evectors, axis=0)                           # find the norm of each eigenvector
         self.evectors = self.evectors / norms                                   # normalize all eigenvectors
