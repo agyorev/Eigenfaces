@@ -124,7 +124,7 @@ class Eigenfaces(object):                                                       
         norms = np.linalg.norm(diff, axis=0)
 
         closest_face_id = np.argmin(norms)                                      # the id [0..240) of the minerror face to the sample
-        return (closest_face_id / self.train_faces_count) + 1                   # return the faceid (1..40)
+        return int(closest_face_id / self.train_faces_count) + 1                   # return the faceid (1..40)
 
     """
     Evaluate the model using the 4 test faces left
